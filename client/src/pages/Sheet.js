@@ -23,16 +23,12 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import PlagiarismIcon from '@mui/icons-material/Plagiarism';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
-// import { PROXY } from "../components/proxy";
 
 const Sheet = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [dataArr, setDataArr] = useState([]);
   const ref = useRef();
-  const [isAdmin, setIsAdmin] = useState(false);
-  // const [fileName, setFileName] = useState('');
   const [state, setState] = useState({
     top: false
   });
@@ -43,7 +39,6 @@ const Sheet = () => {
     .then(async (res)=> {
       setAgencyName(res.data.data);
       if(res.data.data === '어드민'){
-        setIsAdmin(true);
         await axios.get(`/api/allExcel`)
           .then(res => {
             const resData = res.data[0].data.recordset;
@@ -164,16 +159,6 @@ const Sheet = () => {
             <ListItemText primary="엑셀로 다운로드" />
           </ListItemButton>
         </ListItem>
-        {isAdmin && (
-          <ListItem disablePadding>
-          <ListItemButton onClick={excelDownload}>
-            <ListItemIcon>
-              <AddCircleIcon />
-            </ListItemIcon>
-            <ListItemText primary="기준 테이블 데이터 병합" />
-          </ListItemButton>
-        </ListItem>
-        )}
       </List>
       <Divider />
       <List>
@@ -191,7 +176,6 @@ const Sheet = () => {
 
   const fileHandler = (event) => {
       const fileObj = event.target.files[0];
-      // setFileName(event.target.files[0].name);
       if(fileObj.name.split('.')[1] === 'xls' || fileObj.name.split('.')[1] === 'xlsx' ) {
         readXlsxFile(fileObj).then(res => {
           res.forEach(props => {
@@ -248,7 +232,6 @@ const Sheet = () => {
 
   const handleOnClick = () => {
     setDataArr([]);
-    // setFileName('');
     ref.current.value='';
     ref.current.click();
   }
@@ -326,7 +309,6 @@ const Sheet = () => {
     </div>
         <TableWrapper>
           <TitleWrapper>
-            {/* <FileTitle>파일명 : {fileName ? fileName : '파일을 추가해 주세요.'}</FileTitle> */}
             <FileTitle>현재 대리점 : {agencyName}</FileTitle>
           </TitleWrapper>
           <SpreadsheetWrapper columnLabels={TitleLabel} data={dataArr} onChange={setDataArr}/>

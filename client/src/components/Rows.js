@@ -1,7 +1,9 @@
-const Rows = (name) => {
+const Rows = (name, agency) => {
+  const getDate = new Date();
   const arr = [
+    {value : getDate.getFullYear()},
     {value: name},
-    {value: '[agency]'},
+    {value: agency},
     {value: '[catalog]'},
     {value: '[cat_no]'},
     {value: '[unit]'},
@@ -16,7 +18,8 @@ const Rows = (name) => {
     {value: '0'},
     {value: '0'},
     {value: '0'},
-    {value: '0'}
+    {value: '0'},
+
   ];
 
   return arr;
@@ -235,6 +238,7 @@ const SheetForm = [
 ];
 
 const TitleLabel = [
+  '년도',
   '입력자',
   '대리점',
   'Catalog',
@@ -251,7 +255,7 @@ const TitleLabel = [
   'Sep',
   'Oct',
   'Nov',
-  'Dec'
+  'Dec',
 ];
 
 export {Rows, SheetForm, TitleLabel};

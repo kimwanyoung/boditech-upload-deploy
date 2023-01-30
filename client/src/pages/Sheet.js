@@ -1,9 +1,10 @@
 import styled from "styled-components";
 import readXlsxFile from 'read-excel-file';
 import Spreadsheet from "react-spreadsheet";
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import { useLocation, useNavigate } from "react-router-dom";
-import {Rows,SheetForm, TitleLabel} from "../components/Rows";
+import {Rows, TitleLabel} from "../components/Rows";
+import * as xlsx from 'xlsx';
 import axios from "axios";
 import Box from '@mui/material/Box';
 import SwipeableDrawer from '@mui/material/SwipeableDrawer';
@@ -21,16 +22,61 @@ import SaveIcon from '@mui/icons-material/Save';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import PlagiarismIcon from '@mui/icons-material/Plagiarism';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+// import { PROXY } from "../components/proxy";
 
 const Sheet = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [dataArr, setDataArr] = useState([]);
   const ref = useRef();
-  const [fileName, setFileName] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
+  // const [fileName, setFileName] = useState('');
   const [state, setState] = useState({
     top: false
   });
+  const [agencyName, setAgencyName] = useState('');
+
+  useEffect(() => {
+    axios.get(`/api/userId?userId=${location.state}`)
+    .then(async (res)=> {
+      setAgencyName(res.data.data);
+      if(res.data.data === '어드민'){
+        setIsAdmin(true);
+        await axios.get(`/api/allExcel`)
+          .then(res => {
+            const resData = res.data[0].data.recordset;
+            const newResData = resData.map(props => {
+              const result = [];
+              for(let keys in props){
+                result.push({value: props[keys]})
+              }
+              return result;
+            })
+            setDataArr(newResData);
+          })
+          .catch(err => console.log(err))
+        return;
+      }else{
+      await axios.get(`/api/excel?agency=${location.state}`)
+      .then( res => {  
+        const resData = res.data[0].data.recordset;
+        const newResData = resData.map(props => {
+          const result = [];
+          for(let keys in props){
+            result.push({value: props[keys]})
+          }
+          return result;
+        })
+        setDataArr(newResData);
+      })
+      .catch(err => console.log(err))    
+    }
+    }).catch(err => {
+      console.error(err);
+    })
+  }, [location.state])
 
   const toggleDrawer = (anchor, open) => (event) => {
     if (
@@ -43,6 +89,24 @@ const Sheet = () => {
 
     setState({ ...state, [anchor]: open });
   };
+
+  const excelDownload = () => {
+    const submitArr = dataArr.map(innerArr => {
+      return innerArr.map((props) => {
+        if(props.value === null){
+          return 0;
+        }else{
+          return props.value;
+        }
+      });
+    });
+    submitArr.unshift(TitleLabel);
+    console.log(submitArr);
+    const book = xlsx.utils.book_new();
+    const dataSheet = xlsx.utils.json_to_sheet(submitArr, {skipHeader:true});
+    xlsx.utils.book_append_sheet(book, dataSheet, "data");
+    xlsx.writeFile(book, "data.xlsx");
+  }
   
   const list = (anchor) => (
     <Box
@@ -59,39 +123,57 @@ const Sheet = () => {
               </ListItemIcon>
               <ListItemText primary="파일 업로드" />
             </ListItemButton>
-          </ListItem>
+        </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton onClick={handleAppendRows}>
+            <ListItemIcon>
+              <PostAddIcon />
+            </ListItemIcon>
+            <ListItemText primary="행 추가" />
+          </ListItemButton>
+        </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton onClick={handleClearCell}>
+            <ListItemIcon>
+              <AutoFixHighIcon />
+            </ListItemIcon>
+            <ListItemText primary="셀 초기화" />
+          </ListItemButton>
+        </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton onClick={handleGetData}>
+            <ListItemIcon>
+              <PlagiarismIcon />
+            </ListItemIcon>
+            <ListItemText primary="현재 데이터 조회" />
+          </ListItemButton>
+        </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton onClick={handleSubmit}>
+            <ListItemIcon>
+              <SaveIcon />
+            </ListItemIcon>
+            <ListItemText primary="데이터 전송" />
+          </ListItemButton>
+        </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton onClick={excelDownload}>
+            <ListItemIcon>
+              <CloudDownloadIcon />
+            </ListItemIcon>
+            <ListItemText primary="엑셀로 다운로드" />
+          </ListItemButton>
+        </ListItem>
+        {isAdmin && (
           <ListItem disablePadding>
-            <ListItemButton onClick={handleAppendRows}>
-              <ListItemIcon>
-                <PostAddIcon />
-              </ListItemIcon>
-              <ListItemText primary="행 추가" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton onClick={handleClearCell}>
-              <ListItemIcon>
-                <AutoFixHighIcon />
-              </ListItemIcon>
-              <ListItemText primary="셀 초기화" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton onClick={handleGetData}>
-              <ListItemIcon>
-                <PlagiarismIcon />
-              </ListItemIcon>
-              <ListItemText primary="현재 데이터 조회" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton onClick={handleSubmit}>
-              <ListItemIcon>
-                <SaveIcon />
-              </ListItemIcon>
-              <ListItemText primary="데이터 전송" />
-            </ListItemButton>
-          </ListItem>
+          <ListItemButton onClick={excelDownload}>
+            <ListItemIcon>
+              <AddCircleIcon />
+            </ListItemIcon>
+            <ListItemText primary="기준 테이블 데이터 병합" />
+          </ListItemButton>
+        </ListItem>
+        )}
       </List>
       <Divider />
       <List>
@@ -109,7 +191,7 @@ const Sheet = () => {
 
   const fileHandler = (event) => {
       const fileObj = event.target.files[0];
-      setFileName(event.target.files[0].name);
+      // setFileName(event.target.files[0].name);
       if(fileObj.name.split('.')[1] === 'xls' || fileObj.name.split('.')[1] === 'xlsx' ) {
         readXlsxFile(fileObj).then(res => {
           res.forEach(props => {
@@ -154,7 +236,7 @@ const Sheet = () => {
         return (props.reduce((cnt, elem) => cnt + (elem === 0), 0) < 15)
       })
 
-      axios.post('/api/excel', {
+      axios.post(`/api/excel`, {
         data:{
           id:location.state,
           form: newSubArr
@@ -166,13 +248,13 @@ const Sheet = () => {
 
   const handleOnClick = () => {
     setDataArr([]);
-    setFileName('');
+    // setFileName('');
     ref.current.value='';
     ref.current.click();
   }
 
   const handleLogout = () => {
-    axios.get('/api/logout')
+    axios.get(`/api/logout`)
     .then(res => {
       navigate('/');
     })
@@ -181,14 +263,31 @@ const Sheet = () => {
 
   const handleAppendRows = () => {
     let appendArr = [...dataArr];
-    appendArr.push(Rows(location.state));
+    appendArr.push(Rows(location.state, agencyName));
     return setDataArr(appendArr);
   }
 
   const handleGetData = () => {
-    axios.get('/api/excel')
+    console.log(location.state);
+    setDataArr([]);
+    if(location.state === 'admin'){
+      axios.get(`/api/allExcel`)
+      .then(res => {
+        const resData = res.data[0].data.recordset;
+        const newResData = resData.map(props => {
+          const result = [];
+          for(let keys in props){
+            result.push({value: props[keys]})
+          }
+          return result;
+        })
+        setDataArr(newResData);
+      })
+      .catch(err => console.log(err))
+      return;
+    }
+    axios.get(`/api/excel?agency=${location.state}`)
     .then(res => {
-      setDataArr([]);
       const resData = res.data[0].data.recordset;
       const newResData = resData.map(props => {
         const result = [];
@@ -203,9 +302,9 @@ const Sheet = () => {
   }
 
   const handleClearCell = () => {
-    ref.current.value = [];
+    ref.current.value = '';
     setDataArr([]);
-    setFileName('');
+    // setFileName('');
   }
 
   return (
@@ -226,8 +325,11 @@ const Sheet = () => {
         </React.Fragment>
     </div>
         <TableWrapper>
-          <FileTitle>파일명 : {fileName ? fileName : '파일을 추가해 주세요.'}</FileTitle>
-          <SpreadsheetWrapper columnLabels={TitleLabel} data={dataArr.length !== 0 ? dataArr : SheetForm} onChange={setDataArr}/>
+          <TitleWrapper>
+            {/* <FileTitle>파일명 : {fileName ? fileName : '파일을 추가해 주세요.'}</FileTitle> */}
+            <FileTitle>현재 대리점 : {agencyName}</FileTitle>
+          </TitleWrapper>
+          <SpreadsheetWrapper columnLabels={TitleLabel} data={dataArr} onChange={setDataArr}/>
         </TableWrapper>
     </AppWrapper>
   );
@@ -275,4 +377,11 @@ const FileTitle = styled.h2`
   font-size: 1.1rem;
   font-weight: 600;
   margin:1rem 0 1rem 1rem;
+`
+
+const TitleWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
 `

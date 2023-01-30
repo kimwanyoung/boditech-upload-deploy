@@ -7,10 +7,12 @@ const expressSession = require('express-session');
 const loginRouter = require('./routes/login');
 const excelRouter = require('./routes/excel');
 const logoutRouter = require('./routes/logout');
+const userIdRouter = require('./routes/userId');
+const allExcelRouter = require('./routes/allExcel');
 
 
 const app = express();
-app.set('port', 8080);
+app.set('port', process.env.PORT || 8080);
 
 app.use(express.json({ limit: '100mb' }));
 app.use(serveStatic(path.join(__dirname, 'public')));
@@ -22,9 +24,11 @@ app.use(expressSession({
 }));
 app.use(cors());
 
-app.use('/api/excel', excelRouter)
+app.use('/api/excel', excelRouter);
 app.use('/api/login', loginRouter);
-app.use('/api/logout', logoutRouter)
+app.use('/api/logout', logoutRouter);
+app.use('/api/userId', userIdRouter);
+app.use('/api/allExcel', allExcelRouter);
 
 app.listen(8080, function () {
     console.log('listening on 8080')

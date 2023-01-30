@@ -3,10 +3,13 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMediaQuery } from "react-responsive";
 import axios from 'axios';
+// import { PROXY } from "../components/proxy";
 
 const Login = () => {
   const navigate = useNavigate();
+  const isMobile = useMediaQuery({maxWidth: 767});
   const [userInfo, setUserInfo] = useState({
     id:'',
     password:''
@@ -21,7 +24,7 @@ const Login = () => {
 
   const handleSubmit = () => {
     if(userInfo.id && userInfo.password) {
-      axios.post('/api/login', {data: {id:userInfo.id, password: userInfo.password}})
+      axios.post(`/api/login`, {data: {id:userInfo.id, password: userInfo.password}})
         .then(res => {
           if(res.data === 'success'){
             navigate('/Sheet', {state : userInfo.id});
@@ -37,7 +40,7 @@ const Login = () => {
 
   return (
     <LoginPageWrapper>
-      <LoginBox>
+      <LoginBox isMobile={isMobile}>
         <InputWrapper>
           <LoginInput label="ID" variant="outlined" name="id" onChange={handleInput}/>
           <LoginInput type="password" label="Password" variant="outlined" name="password" onChange={handleInput}/>
@@ -65,8 +68,8 @@ const LoginBox = styled.div`
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  width: 30%;
-  height: 40%;
+  width: ${props => props.isMobile ? '90vw' : '30%'};
+  height: ${props => props.isMobile ? '17rem' : '40%'};
   box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
 `
 

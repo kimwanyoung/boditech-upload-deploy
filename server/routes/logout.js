@@ -2,14 +2,13 @@ const express = require('express');
 const router = express.Router();
 
 router.get('/', (req, res) => {
-  console.log('logout');
   if (req.session.user) {
       req.session.destroy(err => {
           if (err) {
-              console.log('세션 삭제 중 에러 발생');
+              console.info('세션 삭제 중 에러 발생');
               return;
           }
-          console.log('로그아웃 완료.');
+          console.info('로그아웃 완료.');
           res.json([{ data: '로그아웃 완료' }]);
       })
   }else {

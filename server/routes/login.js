@@ -19,10 +19,8 @@ router.post('/', async (req, res) => {
             name: userId,
             authorized: true,
         };
-        console.log('log in success');
         res.json('success');
     } else {
-        console.log('false');
         res.json('등록되지 않은 유저 입니다.');
     }
 })

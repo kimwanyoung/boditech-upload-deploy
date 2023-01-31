@@ -4,6 +4,10 @@ import Router from "./Router";
 
 const GlobalStyles = createGlobalStyle`
         ${reset}
+
+        *,body {
+          font-family: 'Courier New, 16pt', 'Gulim' !important;
+        }
 `
 
 const App = () => {

@@ -238,12 +238,12 @@ const SheetForm = [
 ];
 
 const TitleLabel = [
-  '년도',
-  '입력자',
-  '대리점',
+  'Year',
+  'Name',
+  'Company',
   'Catalog',
-  'cat no',
-  'unit',
+  'Cat no',
+  'Unit',
   'Jan',
   'Feb',
   'Mar',

@@ -6,12 +6,19 @@ const router = express.Router();
 
 router.get('/', async(req, res) =>{
   const query = `
-        select UpdateDate, userName, agency, catalog, cat_no, unit, Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec from ${GET_SHEET_NAME} where userName='${req.query.agency}'
+        select 
+          UpdateDate, userName, agency, catalog, cat_no, unit, Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec 
+        from 
+          ${SHEET_NAME}
+        where 
+          agency='${req.query.agency}' 
+        order by 
+          UpdateDate desc
     `;
     const pool = await connPool;
     const result = await pool.request().query(query);
     res.json([{data: result}]);
-    console.info(req.query.agency);
+    console.info(result);
 })
 
 router.post('/', async (req, res) => {
@@ -56,7 +63,6 @@ router.post('/', async (req, res) => {
       const pool = await connPool;
       const result = await pool.request().query(query);
   }
-  console.log('success');
   res.json([{ data: '데이터 업로드 성공!' }]);
 })
 

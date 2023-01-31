@@ -9,6 +9,7 @@ const excelRouter = require('./routes/excel');
 const logoutRouter = require('./routes/logout');
 const userIdRouter = require('./routes/userId');
 const allExcelRouter = require('./routes/allExcel');
+const getUserRouter = require('./routes/getUser');
 
 
 const app = express();
@@ -29,7 +30,8 @@ app.use('/api/login', loginRouter);
 app.use('/api/logout', logoutRouter);
 app.use('/api/userId', userIdRouter);
 app.use('/api/allExcel', allExcelRouter);
+app.use('/api/getUser', getUserRouter)
 
 app.listen(8080, function () {
-    console.log('listening on 8080')
+    console.info('listening on 8080')
 })

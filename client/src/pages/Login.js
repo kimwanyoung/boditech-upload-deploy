@@ -29,13 +29,13 @@ const Login = () => {
           if(res.data === 'success'){
             navigate('/Sheet', {state : userInfo.id});
           }else{
-            alert('등록되지 않은 사용자 입니다.');
+            alert('This user is not registered.');
             return;
           }
         })
-        .catch(err => console.log(err));
+        .catch(err => console.error(err));
     }
-    else alert('아이디 및 비밀번호를 확인해주세요');
+    else alert('Please check your ID and password.');
   }
 
   return (
@@ -46,7 +46,7 @@ const Login = () => {
           <LoginInput type="password" label="Password" variant="outlined" name="password" onChange={handleInput}/>
         </InputWrapper>
         <BtnWrapper>
-          <LoginButton variant="contained" color="info" onClick={handleSubmit}>로그인</LoginButton>
+          <LoginButton variant="contained" color="info" onClick={handleSubmit}>Sign in</LoginButton>
         </BtnWrapper>
       </LoginBox>
     </LoginPageWrapper>
@@ -70,7 +70,7 @@ const LoginBox = styled.div`
   flex-direction: column;
   width: ${props => props.isMobile ? '90vw' : '30%'};
   height: ${props => props.isMobile ? '17rem' : '40%'};
-  box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
 `
 
 const LoginButton = styled(Button)`

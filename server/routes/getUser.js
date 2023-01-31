@@ -1,12 +1,12 @@
 const express = require('express');
 const { connPool } = require('../sql_server/server');
-const {SHEET_NAME} = require('../common/var');
+const {LOGIN_SHEET} = require('../common/var');
 
 const router = express.Router();
 
 router.get('/', async(req, res) =>{
   const query = `
-        select UpdateDate, userName, agency, catalog, cat_no, unit, Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec  from ${SHEET_NAME} order by userName, UpdateDate desc
+        select agency from ${LOGIN_SHEET} order by agency desc
     `;
     const pool = await connPool;
     const result = await pool.request().query(query);

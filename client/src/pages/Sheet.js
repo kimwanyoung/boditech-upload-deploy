@@ -8,16 +8,14 @@ import * as xlsx from 'xlsx';
 import axios from "axios";
 import Box from '@mui/material/Box';
 import List from '@mui/material/List';
-import SearchIcon from '@mui/icons-material/Search';
 import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import LogoutIcon from '@mui/icons-material/Logout';
-import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import { Button } from "@mui/material";
 import CompanyModal from "../components/CompanyModal";
+import { list } from "../components/List";
+import { handleSubmit, handleGetData, defaultCellChecker, mapper, handleOnClick } from "../utils/SheetUtils";
 
 
 const Sheet = () => {
@@ -32,54 +30,10 @@ const Sheet = () => {
     axios.get(`/api/userId?userId=${location.state}`)
       .then(async (res) => {
         setAgencyName(res.data.data);
-        if (res.data.data === '어드민') {
+        if (res.data.data === 'admin') {
           setIsAdmin(true);
-          setAgencyName('Admin');
-          await axios.get(`/api/allExcel?agency=${location.state}`)
-            .then(res => {
-              const resData = res.data[0].data.recordset;
-              const newResData = resData.map(props => {
-                const result = [];
-                for (let keys in props) {
-                  result.push({ value: props[keys], readOnly: true })
-                }
-                return result;
-              })
-              setDataArr(newResData);
-              if (newResData.length < 10) {
-                const arrCount = 10 - newResData.length;
-                if (arrCount > 0) {
-                  for (let i = 0; i < arrCount; i++) {
-                    setDataArr(prev => [...prev, SheetForm[0]]);
-                  }
-                }
-              }
-            })
-            .catch(err => console.error(err))
-          return;
-        } else {
-          await axios.get(`/api/excel?agency=${location.state}`)
-            .then(res => {
-              const resData = res.data[0].data.recordset;
-              const newResData = resData.map(props => {
-                const result = [];
-                for (let keys in props) {
-                  result.push({ value: props[keys], readOnly: true })
-                }
-                return result;
-              })
-              setDataArr(newResData);
-              if (newResData.length < 10) {
-                const arrCount = 10 - newResData.length;
-                if (arrCount > 0) {
-                  for (let i = 0; i < arrCount; i++) {
-                    setDataArr(prev => [...prev, SheetForm[0]]);
-                  }
-                }
-              }
-            })
-            .catch(err => console.error(err))
         }
+        handleGetData(setDataArr, agencyName);
       }).catch(err => {
         console.error(err);
       })
@@ -103,44 +57,8 @@ const Sheet = () => {
     const book = xlsx.utils.book_new();
     const dataSheet = xlsx.utils.json_to_sheet(submitArr, { skipHeader: true });
     xlsx.utils.book_append_sheet(book, dataSheet, "data");
-    xlsx.writeFile(book, "data.xlsx");
+    xlsx.writeFile(book, `fcst-${agencyName}-data.xlsx`);
   }
-  const list = () => (
-    <Box height="100vh" width="15rem" display="flex" justifyContent="space-between" flexDirection="column" boxShadow="rgba(149, 157, 165, 0.2) 0px 8px 24px">
-      <Box display="flex" justifyContent="space-around" flexDirection="column" width="100%" height="10vh" pt="2rem">
-        <List>
-          <ListItem disablePadding>
-            <ListItemButton onClick={excelDownload}>
-              <ListItemIcon>
-                <CloudDownloadIcon />
-              </ListItemIcon>
-              <ListItemText primary="File download" />
-            </ListItemButton>
-          </ListItem>
-        </List>
-        <List>
-          <ListItem disablePadding>
-            <ListItemButton onClick={() => handleGetData(location.state)}>
-              <ListItemIcon>
-                <SearchIcon />
-              </ListItemIcon>
-              <ListItemText primary="FCST lookup" />
-            </ListItemButton>
-          </ListItem>
-        </List>
-      </Box>
-      <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={handleLogout}>
-            <ListItemIcon>
-              <LogoutIcon />
-            </ListItemIcon>
-            <ListItemText primary="Logout" />
-          </ListItemButton>
-        </ListItem>
-      </List>
-    </Box>
-  );
 
   const fileHandler = (event) => {
     const fileObj = event.target.files[0];
@@ -154,7 +72,6 @@ const Sheet = () => {
             } else {
               newDataObj = { "value": prop, "readOnly": true };
             }
-
             return newDataObj;
           });
           setDataArr(prev => {
@@ -166,51 +83,13 @@ const Sheet = () => {
           newArr.shift();
           return newArr;
         })
-        if (dataArr.length < 10) {
-          const arrCount = 10 - dataArr.length;
-          if (arrCount > 0) {
-            for (let i = 0; i < arrCount; i++) {
-              setDataArr(prev => [...prev, SheetForm[0]]);
-            }
-          }
-        }
+        defaultCellChecker(dataArr, setDataArr);
       }).catch(err => console.error(err));
     } else {
       alert('엑셀 파일만 업로드 가능합니다');
       event.target.value = '';
       return;
     }
-  }
-
-  const handleSubmit = () => {
-    const submitArr = dataArr.map(innerArr => {
-      return innerArr.map((props) => {
-        if (props.value === null) {
-          return 0;
-        } else {
-          return props.value;
-        }
-      });
-    });
-    const newSubArr = submitArr.filter(props => {
-      return (props.reduce((cnt, elem) =>
-        cnt + (elem === undefined || elem === null || elem === 0), 0) < 14);
-    })
-
-    axios.post(`/api/excel`, {
-      data: {
-        id: location.state,
-        form: newSubArr
-      }
-    })
-      .then(res => alert(res.data[0].data))
-      .catch(err => console.error(err));
-  }
-
-  const handleOnClick = () => {
-    setDataArr([]);
-    ref.current.value = '';
-    ref.current.click();
   }
 
   const handleLogout = () => {
@@ -220,58 +99,6 @@ const Sheet = () => {
       })
       .catch(err => console.error(err))
   }
-
-
-  const handleGetData = (value) => {
-    setDataArr([]);
-    if (location.state === 'admin' && value === null) {
-      axios.get(`/api/allExcel?agency=${value}`)
-        .then(res => {
-          const resData = res.data[0].data.recordset;
-          const newResData = resData.map(props => {
-            const result = [];
-            for (let keys in props) {
-              result.push({ value: props[keys], readOnly: true })
-            }
-            return result;
-          })
-          setDataArr(newResData);
-          if (newResData.length < 10) {
-            const arrCount = 10 - newResData.length;
-            if (arrCount > 0) {
-              for (let i = 0; i < arrCount; i++) {
-                setDataArr(prev => [...prev, SheetForm[0]]);
-              }
-            }
-          }
-        })
-        .catch(err => console.error(err))
-      return;
-    } else if (location.state === 'admin' && value) {
-      axios.get(`/api/excel?agency=${value}`)
-        .then(res => {
-          const resData = res.data[0].data.recordset;
-          const newResData = resData.map(props => {
-            const result = [];
-            for (let keys in props) {
-              result.push({ value: props[keys], readOnly: true })
-            }
-            return result;
-          })
-          setDataArr(newResData);
-          if (newResData.length < 10) {
-            const arrCount = 10 - newResData.length;
-            if (arrCount > 0) {
-              for (let i = 0; i < arrCount; i++) {
-                setDataArr(prev => [...prev, SheetForm[0]]);
-              }
-            }
-          }
-        })
-        .catch(err => console.error(err))
-    }
-  }
-
 
   return (
     <AppWrapper>
@@ -324,20 +151,25 @@ const Sheet = () => {
         )}
 
         {!isAdmin && (
-          <BtnWrapper variant="contained" onClick={handleSubmit}>
+          <BtnWrapper variant="contained" onClick={() => handleSubmit(dataArr, location.state)}>
             Submit
           </BtnWrapper>
         )}
       </BtnContainer>
       <ListWrapper>
-        {list('top')}
+        {list(excelDownload, handleGetData, agencyName, handleLogout, setDataArr)}
       </ListWrapper>
       <TableWrapper>
         <TitleLayout>
           <TitleWrapper>
             <FileTitle>{agencyName}</FileTitle>
           </TitleWrapper>
-          {isAdmin && <CompanyModal handleGetData={handleGetData} />}
+          {isAdmin && (
+            <>
+              <FileTitle>Filter</FileTitle>
+              <CompanyModal handleGetData={handleGetData} />
+            </>
+          )}
         </TitleLayout>
         <SpreadsheetWrapper columnLabels={TitleLabel} data={dataArr} onChange={setDataArr} />
       </TableWrapper>
@@ -382,7 +214,7 @@ const SpreadsheetWrapper = styled(Spreadsheet)`
 const FileTitle = styled.h2`
   font-size: 1.1rem;
   font-weight: 600;
-  margin:1rem 0 1rem 1rem;
+  margin:1rem 0.5rem 1rem 1rem;
 `
 
 const TitleWrapper = styled.div`
@@ -412,5 +244,5 @@ const TitleLayout = styled.div`
   align-items: center;
   justify-content: center;
   height: 5rem;
-  width: 40rem;
+  width: 30rem;
 `

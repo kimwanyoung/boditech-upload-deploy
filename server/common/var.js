@@ -1,5 +1,5 @@
-const SHEET_NAME = 'testSheet5';
-const GET_SHEET_NAME = 'getSheet';
-const LOGIN_SHEET = 'Sheet1$'
+const SHEET_NAME = 'UseFcst';
+const GET_SHEET_NAME = 'StandardFcst';
+const LOGIN_SHEET = 'FcstUser'
 
 module.exports = {SHEET_NAME, LOGIN_SHEET, GET_SHEET_NAME};

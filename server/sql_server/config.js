@@ -13,7 +13,7 @@ const config = {
             idleTimeoutMillis: 30000,
         },
         options: {
-            encrypt: true,
+            encrypt: false,
             database: process.env.DB_DEV_DATABASE,
             trustServerCertificate: true,
         },
@@ -23,6 +23,7 @@ const config = {
                 userName: process.env.DB_DEV_USERNAME,
                 password: process.env.DB_DEV_PASSWORD
             },
+            
         },
     },
 };

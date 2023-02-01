@@ -18,7 +18,6 @@ router.get('/', async(req, res) =>{
     const pool = await connPool;
     const result = await pool.request().query(query);
     res.json([{data: result}]);
-    console.info(result);
 })
 
 router.post('/', async (req, res) => {

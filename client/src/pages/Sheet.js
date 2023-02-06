@@ -3,7 +3,7 @@ import readXlsxFile from 'read-excel-file';
 import Spreadsheet from "react-spreadsheet";
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from "react-router-dom";
-import { TitleLabel, SheetForm } from "../components/Rows";
+import { TitleLabel } from "../components/Rows";
 import * as xlsx from 'xlsx';
 import axios from "axios";
 import Box from '@mui/material/Box';

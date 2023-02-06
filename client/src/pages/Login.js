@@ -40,6 +40,7 @@ const Login = () => {
 
   return (
     <LoginPageWrapper>
+      <LogoImg src="/logo.png" alt="logo" onClick={() => navigate('/')}/>
       <LoginBox isMobile={isMobile}>
         <InputWrapper>
           <LoginInput label="ID" variant="outlined" name="id" onChange={handleInput}/>
@@ -59,8 +60,14 @@ const LoginPageWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content:center;
+  flex-direction: column;
   width: 100vw;
   height: 100vh;
+`
+
+const LogoImg = styled.img`
+  margin-bottom: 2rem;
+  cursor: pointer;
 `
 
 const LoginBox = styled.div`
